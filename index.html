@@ -1,0 +1,1472 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskVault - Task & Assignment Manager</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f5ff',
+                            100: '#e0ebff',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #94a3b8;
+            border-radius: 9999px;
+        }
+        .dark ::-webkit-scrollbar-thumb {
+            background: #334155;
+        }
+        .file-drop-zone.dragover {
+            border-color: #3b82f6;
+            background-color: rgba(59, 130, 246, 0.08);
+        }
+        /* Glassmorphism utility */
+        .glass-panel {
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+    </style>
+</head>
+<body class="bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col md:flex-row transition-colors duration-200">
+
+    <!-- Sidebar / Navigation -->
+    <aside id="sidebar" class="w-full md:w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col justify-between z-20 shrink-0">
+        <div>
+            <!-- Logo Header -->
+            <div class="p-5 flex items-center justify-between border-b border-slate-200 dark:border-slate-800">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-500 flex items-center justify-center text-white shadow-lg shadow-brand-500/30">
+                        <i class="fa-solid font-bold fa-vault text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-lg leading-none text-slate-900 dark:text-white">TaskVault</h1>
+                        <span class="text-xs text-slate-500 dark:text-slate-400 font-medium">Assignment Hub</span>
+                    </div>
+                </div>
+                <!-- Mobile Menu Button -->
+                <button id="mobileMenuBtn" class="md:hidden p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800">
+                    <i class="fa-solid fa-bars text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Navigation Links -->
+            <nav id="navMenu" class="hidden md:block p-4 space-y-1.5">
+                <a href="#" data-filter-nav="all" class="nav-link active flex items-center justify-between px-4 py-3 rounded-xl font-medium text-sm transition-all bg-brand-50 dark:bg-brand-500/10 text-brand-600 dark:text-brand-400">
+                    <div class="flex items-center space-x-3">
+                        <i class="fa-solid fa-layer-group w-5"></i>
+                        <span>Semua Tugas</span>
+                    </div>
+                    <span id="navBadgeAll" class="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300">0</span>
+                </a>
+                <a href="#" data-filter-nav="pending" class="nav-link flex items-center justify-between px-4 py-3 rounded-xl font-medium text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-all">
+                    <div class="flex items-center space-x-3">
+                        <i class="fa-solid fa-clock-rotate-left w-5"></i>
+                        <span>Belum Selesai</span>
+                    </div>
+                    <span id="navBadgePending" class="text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400">0</span>
+                </a>
+                <a href="#" data-filter-nav="completed" class="nav-link flex items-center justify-between px-4 py-3 rounded-xl font-medium text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-all">
+                    <div class="flex items-center space-x-3">
+                        <i class="fa-solid fa-circle-check w-5"></i>
+                        <span>Selesai</span>
+                    </div>
+                    <span id="navBadgeCompleted" class="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400">0</span>
+                </a>
+                <a href="#" data-filter-nav="urgent" class="nav-link flex items-center justify-between px-4 py-3 rounded-xl font-medium text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-all">
+                    <div class="flex items-center space-x-3">
+                        <i class="fa-solid fa-triangle-exclamation w-5 text-rose-500"></i>
+                        <span>Mendekati Tenggat</span>
+                    </div>
+                    <span id="navBadgeUrgent" class="text-xs font-semibold px-2 py-0.5 rounded-full bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400">0</span>
+                </a>
+                
+                <div class="pt-4 mt-4 border-t border-slate-200 dark:border-slate-800">
+                    <p class="px-4 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Penyimpanan Local</p>
+                    <div class="px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800">
+                        <div class="flex items-center justify-between text-xs font-medium mb-1">
+                            <span class="text-slate-500 dark:text-slate-400"><i class="fa-solid fa-database mr-1"></i> IndexedDB</span>
+                            <span class="text-emerald-500 font-semibold">Aktif</span>
+                        </div>
+                        <p class="text-[11px] text-slate-400 dark:text-slate-500">Berkas tersimpan aman di browser Anda tanpa batas server.</p>
+                    </div>
+                </div>
+            </nav>
+        </div>
+
+        <!-- Sidebar Footer & Theme Toggle -->
+        <div class="p-4 border-t border-slate-200 dark:border-slate-800 space-y-3">
+            <button id="themeToggleBtn" class="w-full flex items-center justify-between px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all text-sm font-medium text-slate-700 dark:text-slate-300">
+                <span class="flex items-center space-x-2">
+                    <i id="themeIcon" class="fa-solid fa-moon text-indigo-500"></i>
+                    <span id="themeText">Mode Gelap</span>
+                </span>
+                <div class="w-8 h-4 bg-slate-300 dark:bg-brand-600 rounded-full relative transition-colors">
+                    <div id="themeDot" class="w-3 h-3 bg-white rounded-full absolute top-0.5 left-0.5 dark:left-4 transition-all"></div>
+                </div>
+            </button>
+
+            <!-- Backup & Restore Options -->
+            <div class="flex space-x-2">
+                <button id="exportJsonBtn" title="Ekspor Cadangan JSON" class="flex-1 py-2 px-3 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-medium text-slate-600 dark:text-slate-300 transition-all flex items-center justify-center space-x-1.5">
+                    <i class="fa-solid fa-download"></i>
+                    <span>Ekspor</span>
+                </button>
+                <button id="importJsonBtn" title="Impor Data JSON" class="flex-1 py-2 px-3 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-medium text-slate-600 dark:text-slate-300 transition-all flex items-center justify-center space-x-1.5">
+                    <i class="fa-solid fa-upload"></i>
+                    <span>Impor</span>
+                </button>
+                <input type="file" id="importFileInput" accept=".json" class="hidden">
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 flex flex-col min-w-0 overflow-y-auto">
+        <!-- Top Header Bar -->
+        <header class="bg-white/80 dark:bg-slate-900/80 sticky top-0 z-10 glass-panel border-b border-slate-200 dark:border-slate-800 px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+                <h2 class="text-xl font-bold text-slate-900 dark:text-white">Dashboard Tugas</h2>
+                <p class="text-xs text-slate-500 dark:text-slate-400">Kelola berkas tugas kuliah dan sekolah dengan praktis.</p>
+            </div>
+            
+            <div class="flex items-center space-x-3">
+                <button id="openAddTaskModalBtn" class="bg-brand-600 hover:bg-brand-700 text-white px-4 py-2.5 rounded-xl font-semibold text-sm shadow-md shadow-brand-500/20 hover:shadow-brand-500/40 transition-all flex items-center space-x-2 active:scale-95">
+                    <i class="fa-solid fa-plus"></i>
+                    <span>Tambah Tugas Baru</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Dashboard Content Body -->
+        <div class="p-6 space-y-6 max-w-7xl mx-auto w-full">
+
+            <!-- Stats Widgets -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <!-- Stat 1: Total Tasks -->
+                <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between hover:border-slate-300 dark:hover:border-slate-700 transition-all">
+                    <div>
+                        <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Tugas</p>
+                        <h3 id="statTotal" class="text-2xl font-bold text-slate-900 dark:text-white mt-1">0</h3>
+                        <p class="text-[11px] text-slate-400 mt-1"><i class="fa-solid fa-folder-open text-brand-500"></i> Terdaftar di Vault</p>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-list-check"></i>
+                    </div>
+                </div>
+
+                <!-- Stat 2: Pending Tasks -->
+                <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between hover:border-slate-300 dark:hover:border-slate-700 transition-all">
+                    <div>
+                        <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Belum Selesai</p>
+                        <h3 id="statPending" class="text-2xl font-bold text-amber-600 dark:text-amber-400 mt-1">0</h3>
+                        <p class="text-[11px] text-slate-400 mt-1"><i class="fa-solid fa-spinner text-amber-500"></i> Membutuhkan Tindakan</p>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-hourglass-half"></i>
+                    </div>
+                </div>
+
+                <!-- Stat 3: Completed Tasks -->
+                <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between hover:border-slate-300 dark:hover:border-slate-700 transition-all">
+                    <div>
+                        <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Tugas Selesai</p>
+                        <h3 id="statCompleted" class="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-1">0</h3>
+                        <p class="text-[11px] text-slate-400 mt-1"><i class="fa-solid fa-check-double text-emerald-500"></i> Berhasil Dituntaskan</p>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-circle-check"></i>
+                    </div>
+                </div>
+
+                <!-- Stat 4: Urgent Tasks -->
+                <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between hover:border-slate-300 dark:hover:border-slate-700 transition-all">
+                    <div>
+                        <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Urgent / Kritis</p>
+                        <h3 id="statUrgent" class="text-2xl font-bold text-rose-600 dark:text-rose-400 mt-1">0</h3>
+                        <p class="text-[11px] text-slate-400 mt-1"><i class="fa-solid fa-fire text-rose-500"></i> Deadline &lt; 24 jam</p>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Controls Toolbar (Search, Filter, View Options) -->
+            <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
+                <!-- Search Box -->
+                <div class="relative w-full md:w-80">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                    <input type="text" id="searchInput" placeholder="Cari judul tugas atau mata kuliah..." class="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 transition-all">
+                </div>
+
+                <!-- Filter Controls Group -->
+                <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
+                    <!-- Status Filter -->
+                    <select id="filterStatus" class="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium px-3 py-2 text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                        <option value="all">Semua Status</option>
+                        <option value="pending">Belum Selesai</option>
+                        <option value="in_progress">Sedang Dikerjakan</option>
+                        <option value="completed">Selesai</option>
+                    </select>
+
+                    <!-- Priority Filter -->
+                    <select id="filterPriority" class="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium px-3 py-2 text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                        <option value="all">Semua Prioritas</option>
+                        <option value="high">Tinggi</option>
+                        <option value="medium">Sedang</option>
+                        <option value="low">Rendah</option>
+                    </select>
+
+                    <!-- Sort Option -->
+                    <select id="sortBy" class="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium px-3 py-2 text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                        <option value="deadline_asc">Deadline Terdekat</option>
+                        <option value="deadline_desc">Deadline Terjauh</option>
+                        <option value="created_desc">Terbaru Ditambahkan</option>
+                        <option value="priority_desc">Prioritas Tertinggi</option>
+                    </select>
+
+                    <!-- Layout Toggle (Grid / List) -->
+                    <div class="flex border border-slate-200 dark:border-slate-700 rounded-xl p-1 bg-slate-50 dark:bg-slate-800 ml-auto md:ml-0">
+                        <button id="viewGridBtn" title="Tampilan Kartu" class="p-1.5 rounded-lg text-xs transition-colors bg-white dark:bg-slate-700 text-brand-600 dark:text-brand-400 shadow-sm">
+                            <i class="fa-solid fa-border-all w-4"></i>
+                        </button>
+                        <button id="viewListBtn" title="Tampilan Tabel/Daftar" class="p-1.5 rounded-lg text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+                            <i class="fa-solid fa-list w-4"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Task Container Area -->
+            <div id="tasksContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                <!-- Task Cards dynamic rendering via JS -->
+            </div>
+
+            <!-- Empty State Display -->
+            <div id="emptyState" class="hidden flex-col items-center justify-center py-16 px-4 bg-white dark:bg-slate-900 rounded-2xl border border-dashed border-slate-300 dark:border-slate-800 text-center">
+                <div class="w-16 h-16 rounded-2xl bg-brand-50 dark:bg-slate-800 text-brand-500 flex items-center justify-center text-2xl mb-4">
+                    <i class="fa-solid fa-folder-open"></i>
+                </div>
+                <h3 class="text-base font-bold text-slate-800 dark:text-slate-200">Tidak ada tugas ditemukan</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 max-w-sm mt-1">Belum ada tugas yang ditambahkan atau tidak ada tugas yang cocok dengan kriteria filter Anda.</p>
+                <button id="emptyAddTaskBtn" class="mt-4 px-4 py-2 bg-brand-600 text-white rounded-xl text-xs font-semibold shadow hover:bg-brand-700 transition-all">
+                    <i class="fa-solid fa-plus mr-1"></i> Buat Tugas Baru
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Add / Edit Task Modal -->
+    <div id="taskModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-200">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden transform scale-95 transition-transform duration-200">
+            <!-- Modal Header -->
+            <div class="p-5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-9 h-9 rounded-xl bg-brand-50 dark:bg-brand-900/30 text-brand-600 dark:text-brand-400 flex items-center justify-center">
+                        <i class="fa-solid fa-file-pen"></i>
+                    </div>
+                    <h3 id="modalTitle" class="font-bold text-lg text-slate-900 dark:text-white">Tambah Tugas Baru</h3>
+                </div>
+                <button id="closeModalBtn" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-2 rounded-lg">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Modal Form Body -->
+            <form id="taskForm" class="p-6 overflow-y-auto space-y-4 flex-1">
+                <input type="hidden" id="taskId">
+                
+                <!-- Title Input -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Judul Tugas <span class="text-rose-500">*</span></label>
+                    <input type="text" id="taskTitle" required placeholder="Contoh: Laporan Selesai Praktikum Pemrograman Web" class="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                </div>
+
+                <!-- Subject & Priority Grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Mata Kuliah / Subjek <span class="text-rose-500">*</span></label>
+                        <input type="text" id="taskSubject" required placeholder="Contoh: Basis Data, Algoritma" class="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Tingkat Prioritas</label>
+                        <select id="taskPriority" class="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                            <option value="low">Rendah (Santai)</option>
+                            <option value="medium" selected>Sedang (Normal)</option>
+                            <option value="high">Tinggi (Penting & Urgent)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Deadline & Status Grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Tanggal & Waktu Tenggat <span class="text-rose-500">*</span></label>
+                        <input type="datetime-local" id="taskDeadline" required class="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Status Pengerjaan</label>
+                        <select id="taskStatus" class="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                            <option value="pending">Belum Selesai</option>
+                            <option value="in_progress">Sedang Dikerjakan</option>
+                            <option value="completed">Selesai</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Notes / Description -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Catatan / Instruksi Tugas</label>
+                    <textarea id="taskNotes" rows="3" placeholder="Tuliskan petunjuk pengerjaan, format penyerahan, atau catatan kelompok di sini..." class="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"></textarea>
+                </div>
+
+                <!-- File Upload Drag & Drop Zone -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Unggah Berkas Tugas (Disimpan di IndexedDB Browser)</label>
+                    <div id="dropZone" class="file-drop-zone border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-2xl p-6 text-center cursor-pointer hover:border-brand-500 dark:hover:border-brand-500 transition-colors bg-slate-50/50 dark:bg-slate-800/30">
+                        <i class="fa-solid fa-cloud-arrow-up text-3xl text-brand-500 mb-2"></i>
+                        <p class="text-xs font-semibold text-slate-700 dark:text-slate-200">Tarik & lepas file ke sini, atau <span class="text-brand-600 dark:text-brand-400 underline">Pilih Berkas</span></p>
+                        <p class="text-[11px] text-slate-400 mt-1">Mendukung PDF, DOCX, ZIP, JPG, PNG, dll. (Tersimpan persistent di memori lokal)</p>
+                        <input type="file" id="fileInput" multiple class="hidden">
+                    </div>
+
+                    <!-- Selected Files List Container -->
+                    <div id="attachedFilesList" class="mt-3 space-y-2"></div>
+                </div>
+            </form>
+
+            <!-- Modal Footer -->
+            <div class="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 flex items-center justify-end space-x-3">
+                <button id="cancelTaskBtn" class="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold text-slate-600 dark:text-slate-300 transition-all">
+                    Batal
+                </button>
+                <button id="saveTaskBtn" type="submit" form="taskForm" class="px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold shadow-md shadow-brand-500/20 transition-all flex items-center space-x-1.5">
+                    <i class="fa-solid fa-floppy-disk"></i>
+                    <span>Simpan Tugas</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Task Detail Modal View -->
+    <div id="detailModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-200">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden transform scale-95 transition-transform duration-200">
+            <div class="p-5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                <span id="detailPriorityBadge" class="px-2.5 py-1 rounded-md text-xs font-semibold uppercase tracking-wider"></span>
+                <button id="closeDetailModalBtn" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-lg">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            
+            <div class="p-6 overflow-y-auto space-y-5 flex-1">
+                <div>
+                    <span id="detailSubject" class="text-xs font-bold text-brand-600 dark:text-brand-400 uppercase tracking-wider"></span>
+                    <h2 id="detailTitle" class="text-xl font-bold text-slate-900 dark:text-white mt-1"></h2>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-800 text-xs">
+                    <div>
+                        <span class="text-slate-400 block mb-0.5">Batas Waktu Tenggat:</span>
+                        <span id="detailDeadline" class="font-semibold text-slate-800 dark:text-slate-200"></span>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 block mb-0.5">Status Pengerjaan:</span>
+                        <span id="detailStatus" class="font-semibold"></span>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Catatan Tugas</h4>
+                    <p id="detailNotes" class="text-sm text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/40 p-4 rounded-xl whitespace-pre-wrap border border-slate-200/50 dark:border-slate-800"></p>
+                </div>
+
+                <div>
+                    <h4 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Berkas Terlampir</h4>
+                    <div id="detailFileList" class="space-y-2"></div>
+                </div>
+            </div>
+
+            <div class="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 flex justify-end space-x-2">
+                <button id="editFromDetailBtn" class="px-4 py-2 bg-brand-600 text-white rounded-xl text-xs font-semibold hover:bg-brand-700 transition-all flex items-center space-x-1.5">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                    <span>Edit Tugas</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-200">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-sm p-6 text-center transform scale-95 transition-transform duration-200">
+            <div class="w-12 h-12 rounded-2xl bg-rose-50 dark:bg-rose-900/30 text-rose-500 flex items-center justify-center mx-auto text-xl mb-3">
+                <i class="fa-solid fa-trash-can"></i>
+            </div>
+            <h3 class="font-bold text-base text-slate-900 dark:text-white">Hapus Tugas Ini?</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Tugas dan seluruh berkas terlampir akan dihapus permanen dari browser Anda.</p>
+            <div class="flex items-center justify-center space-x-3 mt-6">
+                <button id="cancelConfirmBtn" class="w-full py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">Batal</button>
+                <button id="okConfirmBtn" class="w-full py-2.5 rounded-xl bg-rose-600 text-white text-xs font-semibold hover:bg-rose-700 shadow-md shadow-rose-500/20 transition-all">Hapus</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="fixed bottom-5 right-5 z-50 space-y-2 pointer-events-none"></div>
+
+    <!-- Application Logic Javascript -->
+    <script>
+        // IndexedDB Storage Manager Engine
+        class TaskVaultDB {
+            constructor() {
+                this.dbName = 'TaskVaultStorage';
+                this.dbVersion = 1;
+                this.db = null;
+            }
+
+            async init() {
+                return new Promise((resolve, reject) => {
+                    const request = indexedDB.open(this.dbName, this.dbVersion);
+
+                    request.onerror = (e) => {
+                        console.error("IndexedDB error:", e.target.error);
+                        reject("Gagal membuka penyimpanan IndexedDB.");
+                    };
+
+                    request.onsuccess = (e) => {
+                        this.db = e.target.result;
+                        resolve(this.db);
+                    };
+
+                    request.onupgradeneeded = (e) => {
+                        const db = e.target.result;
+                        if (!db.objectStoreNames.contains('tasks')) {
+                            const store = db.createObjectStore('tasks', { keyPath: 'id' });
+                            store.createIndex('status', 'status', { unique: false });
+                            store.createIndex('priority', 'priority', { unique: false });
+                            store.createIndex('deadline', 'deadline', { unique: false });
+                        }
+                    };
+                });
+            }
+
+            async getAllTasks() {
+                return new Promise((resolve, reject) => {
+                    const transaction = this.db.transaction(['tasks'], 'readonly');
+                    const store = transaction.objectStore('tasks');
+                    const request = store.getAll();
+
+                    request.onsuccess = () => resolve(request.result || []);
+                    request.onerror = () => reject("Gagal mengambil data tugas.");
+                });
+            }
+
+            async saveTask(taskData) {
+                return new Promise((resolve, reject) => {
+                    const transaction = this.db.transaction(['tasks'], 'readwrite');
+                    const store = transaction.objectStore('tasks');
+                    const request = store.put(taskData);
+
+                    request.onsuccess = () => resolve(true);
+                    request.onerror = () => reject("Gagal menyimpan tugas.");
+                });
+            }
+
+            async deleteTask(id) {
+                return new Promise((resolve, reject) => {
+                    const transaction = this.db.transaction(['tasks'], 'readwrite');
+                    const store = transaction.objectStore('tasks');
+                    const request = store.delete(id);
+
+                    request.onsuccess = () => resolve(true);
+                    request.onerror = () => reject("Gagal menghapus tugas.");
+                });
+            }
+        }
+
+        // Global App State Management
+        const dbEngine = new TaskVaultDB();
+        let state = {
+            tasks: [],
+            filterNav: 'all',
+            searchQuery: '',
+            filterStatus: 'all',
+            filterPriority: 'all',
+            sortBy: 'deadline_asc',
+            viewMode: 'grid', // 'grid' or 'list'
+            stagedFiles: [], // Files currently selected in modal form
+            editingTaskId: null,
+            deletingTaskId: null,
+            viewingTaskId: null
+        };
+
+        // DOM Element Helpers
+        const $ = (selector) => document.querySelector(selector);
+        const $$ = (selector) => document.querySelectorAll(selector);
+
+        // Helper: Format Date for Indonesian Locale
+        function formatDate(isoString) {
+            if (!isoString) return '-';
+            const date = new Date(isoString);
+            return new Intl.DateTimeFormat('id-ID', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            }).format(date) + ' WIB';
+        }
+
+        // Helper: Calculate Time Remaining Status
+        function getDeadlineStatus(isoDeadline, status) {
+            if (status === 'completed') {
+                return { type: 'safe', label: 'Tugas Selesai', class: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20' };
+            }
+
+            const now = new Date();
+            const deadline = new Date(isoDeadline);
+            const diffMs = deadline - now;
+            const diffHours = diffMs / (1000 * 60 * 60);
+
+            if (diffMs < 0) {
+                return { type: 'overdue', label: 'Terlewat Deadline', class: 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30 font-semibold' };
+            } else if (diffHours <= 24) {
+                const hoursLeft = Math.ceil(diffHours);
+                return { type: 'urgent', label: `Mendesak (${hoursLeft} jam lagi)`, class: 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30 animate-pulse' };
+            } else if (diffHours <= 72) {
+                const daysLeft = Math.ceil(diffHours / 24);
+                return { type: 'warning', label: `Mendekati (${daysLeft} hari lagi)`, class: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30' };
+            } else {
+                const daysLeft = Math.floor(diffHours / 24);
+                return { type: 'safe', label: `Sisa ${daysLeft} hari`, class: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20' };
+            }
+        }
+
+        // Helper: Format Bytes Size
+        function formatBytes(bytes) {
+            if (!bytes || bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+        }
+
+        // Helper: File Type Icon Selector
+        function getFileIcon(fileType, fileName) {
+            const ext = fileName.split('.').pop().toLowerCase();
+            if (fileType.includes('pdf') || ext === 'pdf') return 'fa-file-pdf text-rose-500';
+            if (fileType.includes('word') || ext === 'doc' || ext === 'docx') return 'fa-file-word text-blue-500';
+            if (fileType.includes('image') || ['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(ext)) return 'fa-file-image text-emerald-500';
+            if (fileType.includes('zip') || fileType.includes('rar') || ['zip', '7z', 'rar'].includes(ext)) return 'fa-file-zipper text-amber-500';
+            if (fileType.includes('code') || ['js', 'html', 'css', 'py', 'java', 'cpp'].includes(ext)) return 'fa-file-code text-indigo-500';
+            return 'fa-file text-slate-400';
+        }
+
+        // Toast Notification Function
+        function showToast(message, type = 'info') {
+            const container = $('#toastContainer');
+            const toast = document.createElement('div');
+            
+            let bgClass = 'bg-slate-800 text-white';
+            let icon = 'fa-circle-info';
+            if (type === 'success') { bgClass = 'bg-emerald-600 text-white'; icon = 'fa-circle-check'; }
+            if (type === 'error') { bgClass = 'bg-rose-600 text-white'; icon = 'fa-circle-exclamation'; }
+
+            toast.className = `pointer-events-auto flex items-center space-x-2.5 px-4 py-3 rounded-xl shadow-lg ${bgClass} text-xs font-semibold transform transition-all duration-300 translate-y-2 opacity-0`;
+            toast.innerHTML = `<i class="fa-solid ${icon} text-base"></i><span>${message}</span>`;
+
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Render Dashboard Statistics
+        function renderStats() {
+            const tasks = state.tasks;
+            const now = new Date();
+
+            const total = tasks.length;
+            const pending = tasks.filter(t => t.status !== 'completed').length;
+            const completed = tasks.filter(t => t.status === 'completed').length;
+            const urgent = tasks.filter(t => {
+                if (t.status === 'completed') return false;
+                const diffMs = new Date(t.deadline) - now;
+                return diffMs <= 24 * 60 * 60 * 1000; // < 24h or overdue
+            }).length;
+
+            $('#statTotal').textContent = total;
+            $('#statPending').textContent = pending;
+            $('#statCompleted').textContent = completed;
+            $('#statUrgent').textContent = urgent;
+
+            $('#navBadgeAll').textContent = total;
+            $('#navBadgePending').textContent = pending;
+            $('#navBadgeCompleted').textContent = completed;
+            $('#navBadgeUrgent').textContent = urgent;
+        }
+
+        // Filter and Sort Tasks
+        function getFilteredTasks() {
+            return state.tasks.filter(task => {
+                // Sidebar Navigation Filter
+                if (state.filterNav === 'pending' && task.status === 'completed') return false;
+                if (state.filterNav === 'completed' && task.status !== 'completed') return false;
+                if (state.filterNav === 'urgent') {
+                    if (task.status === 'completed') return false;
+                    const diffMs = new Date(task.deadline) - new Date();
+                    if (diffMs > 24 * 60 * 60 * 1000) return false;
+                }
+
+                // Dropdown Filter Status
+                if (state.filterStatus !== 'all' && task.status !== state.filterStatus) return false;
+
+                // Dropdown Filter Priority
+                if (state.filterPriority !== 'all' && task.priority !== state.filterPriority) return false;
+
+                // Search Query
+                if (state.searchQuery.trim() !== '') {
+                    const q = state.searchQuery.toLowerCase();
+                    const titleMatch = task.title.toLowerCase().includes(q);
+                    const subjectMatch = task.subject.toLowerCase().includes(q);
+                    if (!titleMatch && !subjectMatch) return false;
+                }
+
+                return true;
+            }).sort((a, b) => {
+                if (state.sortBy === 'deadline_asc') return new Date(a.deadline) - new Date(b.deadline);
+                if (state.sortBy === 'deadline_desc') return new Date(b.deadline) - new Date(a.deadline);
+                if (state.sortBy === 'created_desc') return new Date(b.createdAt) - new Date(a.createdAt);
+                if (state.sortBy === 'priority_desc') {
+                    const prioWeight = { high: 3, medium: 2, low: 1 };
+                    return prioWeight[b.priority] - prioWeight[a.priority];
+                }
+                return 0;
+            });
+        }
+
+        // Render Task Items in Grid or List View
+        function renderTasks() {
+            const container = $('#tasksContainer');
+            const emptyState = $('#emptyState');
+            const filteredTasks = getFilteredTasks();
+
+            container.innerHTML = '';
+
+            if (filteredTasks.length === 0) {
+                container.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+                emptyState.classList.add('flex');
+                return;
+            } else {
+                container.classList.remove('hidden');
+                emptyState.classList.add('hidden');
+                emptyState.classList.remove('flex');
+            }
+
+            if (state.viewMode === 'grid') {
+                container.className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5";
+            } else {
+                container.className = "space-y-3 w-full";
+            }
+
+            filteredTasks.forEach(task => {
+                const deadlineInfo = getDeadlineStatus(task.deadline, task.status);
+                
+                // Priority Tag formatting
+                let prioBadge = 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400';
+                let prioLabel = 'Rendah';
+                if (task.priority === 'high') { prioBadge = 'bg-rose-100 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400'; prioLabel = 'Prioritas Tinggi'; }
+                if (task.priority === 'medium') { prioBadge = 'bg-amber-100 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400'; prioLabel = 'Prioritas Sedang'; }
+
+                // Status Tag Formatting
+                let statusBadge = 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400';
+                let statusText = 'Belum Selesai';
+                if (task.status === 'in_progress') { statusBadge = 'bg-blue-100 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400'; statusText = 'Sedang Dikerjakan'; }
+                if (task.status === 'completed') { statusBadge = 'bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400'; statusText = 'Selesai'; }
+
+                const fileCount = task.files ? task.files.length : 0;
+
+                if (state.viewMode === 'grid') {
+                    // Render Grid Card
+                    const card = document.createElement('div');
+                    card.className = "bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between group relative overflow-hidden";
+                    
+                    card.innerHTML = `
+                        <!-- Top Header Info -->
+                        <div>
+                            <div class="flex items-center justify-between gap-2 mb-2">
+                                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold tracking-wide ${prioBadge}">
+                                    ${prioLabel}
+                                </span>
+                                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${deadlineInfo.class}">
+                                    ${deadlineInfo.label}
+                                </span>
+                            </div>
+
+                            <span class="text-xs font-bold text-brand-600 dark:text-brand-400 uppercase tracking-wider block mt-2">${escapeHtml(task.subject)}</span>
+                            <h3 class="font-bold text-base text-slate-900 dark:text-white mt-1 line-clamp-2 cursor-pointer hover:text-brand-600 transition-colors" onclick="openDetailModal('${task.id}')">
+                                ${escapeHtml(task.title)}
+                            </h3>
+
+                            ${task.notes ? `<p class="text-xs text-slate-500 dark:text-slate-400 mt-2 line-clamp-2">${escapeHtml(task.notes)}</p>` : ''}
+                        </div>
+
+                        <!-- Card Footer -->
+                        <div class="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800/80 space-y-3">
+                            <div class="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+                                <span title="Tenggat Waktu"><i class="fa-regular fa-calendar-check mr-1.5 text-brand-500"></i> ${formatDate(task.deadline)}</span>
+                                <span title="Jumlah Berkas"><i class="fa-solid fa-paperclip mr-1"></i> ${fileCount}</span>
+                            </div>
+
+                            <div class="flex items-center justify-between gap-2 pt-1">
+                                <!-- Quick Status Toggle Button -->
+                                <button onclick="toggleTaskStatus('${task.id}')" class="px-3 py-1.5 rounded-xl text-xs font-semibold ${statusBadge} transition-all hover:opacity-80 flex items-center space-x-1.5">
+                                    <i class="fa-solid ${task.status === 'completed' ? 'fa-circle-check' : 'fa-circle-dot'}"></i>
+                                    <span>${statusText}</span>
+                                </button>
+
+                                <!-- Action Buttons -->
+                                <div class="flex items-center space-x-1">
+                                    <button onclick="openDetailModal('${task.id}')" title="Lihat Detail" class="p-2 rounded-lg text-slate-400 hover:text-brand-600 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs transition-colors">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </button>
+                                    <button onclick="openEditTaskModal('${task.id}')" title="Edit Tugas" class="p-2 rounded-lg text-slate-400 hover:text-brand-600 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs transition-colors">
+                                        <i class="fa-solid fa-pen-to-square"></i>
+                                    </button>
+                                    <button onclick="promptDeleteTask('${task.id}')" title="Hapus Tugas" class="p-2 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs transition-colors">
+                                        <i class="fa-solid fa-trash-can"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                } else {
+                    // Render Row List Item
+                    const row = document.createElement('div');
+                    row.className = "bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm hover:shadow-md transition-all flex flex-col md:flex-row items-start md:items-center justify-between gap-4";
+                    
+                    row.innerHTML = `
+                        <div class="flex items-start space-x-3.5 flex-1 min-w-0">
+                            <button onclick="toggleTaskStatus('${task.id}')" class="mt-1 p-2 rounded-xl ${statusBadge} text-xs transition-all shrink-0">
+                                <i class="fa-solid ${task.status === 'completed' ? 'fa-circle-check text-base' : 'fa-circle text-base'}"></i>
+                            </button>
+                            <div class="min-w-0">
+                                <div class="flex flex-wrap items-center gap-2 mb-1">
+                                    <span class="text-xs font-bold text-brand-600 dark:text-brand-400 uppercase tracking-wider">${escapeHtml(task.subject)}</span>
+                                    <span class="px-2 py-0.2 rounded-full text-[10px] font-semibold ${prioBadge}">${prioLabel}</span>
+                                    <span class="px-2 py-0.2 rounded-full text-[10px] font-semibold border ${deadlineInfo.class}">${deadlineInfo.label}</span>
+                                </div>
+                                <h3 class="font-bold text-sm text-slate-900 dark:text-white cursor-pointer hover:text-brand-600 transition-colors truncate" onclick="openDetailModal('${task.id}')">
+                                    ${escapeHtml(task.title)}
+                                </h3>
+                                <div class="text-xs text-slate-400 mt-1 flex items-center space-x-4">
+                                    <span><i class="fa-regular fa-clock mr-1"></i> ${formatDate(task.deadline)}</span>
+                                    <span><i class="fa-solid fa-paperclip mr-1"></i> ${fileCount} berkas</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center space-x-2 w-full md:w-auto justify-end border-t md:border-t-0 pt-3 md:pt-0 border-slate-100 dark:border-slate-800">
+                            <button onclick="openDetailModal('${task.id}')" class="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-medium hover:bg-slate-200 transition-colors">
+                                <i class="fa-solid fa-eye mr-1"></i> Detail
+                            </button>
+                            <button onclick="openEditTaskModal('${task.id}')" class="p-2 rounded-lg text-slate-400 hover:text-brand-600 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs transition-colors">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </button>
+                            <button onclick="promptDeleteTask('${task.id}')" class="p-2 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs transition-colors">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </div>
+                    `;
+                    container.appendChild(row);
+                }
+            });
+        }
+
+        // Escape HTML Utility to prevent XSS
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>"']/g, function(m) {
+                return {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#039;'
+                }[m];
+            });
+        }
+
+        // File Upload Drag & Drop & Staging
+        function setupFileUploadHandlers() {
+            const dropZone = $('#dropZone');
+            const fileInput = $('#fileInput');
+
+            dropZone.addEventListener('click', () => fileInput.click());
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropZone.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    dropZone.classList.add('dragover');
+                }, false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    dropZone.classList.remove('dragover');
+                }, false);
+            });
+
+            dropZone.addEventListener('drop', (e) => {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                handleSelectedFiles(files);
+            });
+
+            fileInput.addEventListener('change', (e) => {
+                handleSelectedFiles(e.target.files);
+            });
+        }
+
+        function handleSelectedFiles(files) {
+            Array.from(files).forEach(file => {
+                // Prevent duplicate file names in staging
+                if (!state.stagedFiles.some(f => f.name === file.name && f.size === file.size)) {
+                    state.stagedFiles.push({
+                        id: 'file_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+                        name: file.name,
+                        size: file.size,
+                        type: file.type || 'application/octet-stream',
+                        blob: file // Blob or File object stored directly in IndexedDB
+                    });
+                }
+            });
+            renderStagedFiles();
+        }
+
+        function removeStagedFile(fileId) {
+            state.stagedFiles = state.stagedFiles.filter(f => f.id !== fileId);
+            renderStagedFiles();
+        }
+
+        function renderStagedFiles() {
+            const container = $('#attachedFilesList');
+            container.innerHTML = '';
+
+            if (state.stagedFiles.length === 0) return;
+
+            state.stagedFiles.forEach(file => {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'flex items-center justify-between p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 text-xs';
+                fileItem.innerHTML = `
+                    <div class="flex items-center space-x-2.5 min-w-0 pr-2">
+                        <i class="fa-solid ${getFileIcon(file.type, file.name)} text-base shrink-0"></i>
+                        <div class="min-w-0">
+                            <p class="font-semibold text-slate-800 dark:text-slate-200 truncate">${escapeHtml(file.name)}</p>
+                            <p class="text-[10px] text-slate-400">${formatBytes(file.size)}</p>
+                        </div>
+                    </div>
+                    <button type="button" onclick="removeStagedFile('${file.id}')" class="text-slate-400 hover:text-rose-500 p-1.5 rounded-lg transition-colors">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                `;
+                container.appendChild(fileItem);
+            });
+        }
+
+        // Modal Open / Close Logic
+        function openAddTaskModal() {
+            state.editingTaskId = null;
+            state.stagedFiles = [];
+            
+            $('#taskId').value = '';
+            $('#taskTitle').value = '';
+            $('#taskSubject').value = '';
+            $('#taskPriority').value = 'medium';
+            
+            // Set default deadline to tomorrow 23:59
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            tomorrow.setHours(23, 59, 0, 0);
+            const isoLocal = new Date(tomorrow.getTime() - (tomorrow.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+            $('#taskDeadline').value = isoLocal;
+
+            $('#taskStatus').value = 'pending';
+            $('#taskNotes').value = '';
+            
+            renderStagedFiles();
+            $('#modalTitle').textContent = 'Tambah Tugas Baru';
+            
+            showModal('#taskModal');
+        }
+
+        function openEditTaskModal(id) {
+            const task = state.tasks.find(t => t.id === id);
+            if (!task) return;
+
+            state.editingTaskId = id;
+            state.stagedFiles = [...(task.files || [])];
+
+            $('#taskId').value = task.id;
+            $('#taskTitle').value = task.title;
+            $('#taskSubject').value = task.subject;
+            $('#taskPriority').value = task.priority;
+            
+            // Convert stored ISO string to local input value
+            const d = new Date(task.deadline);
+            const isoLocal = new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+            $('#taskDeadline').value = isoLocal;
+
+            $('#taskStatus').value = task.status;
+            $('#taskNotes').value = task.notes || '';
+
+            renderStagedFiles();
+            $('#modalTitle').textContent = 'Edit Tugas';
+            
+            hideModal('#detailModal');
+            showModal('#taskModal');
+        }
+
+        function showModal(selector) {
+            const modal = $(selector);
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modal.children[0].classList.remove('scale-95');
+                modal.children[0].classList.add('scale-100');
+            }, 10);
+        }
+
+        function hideModal(selector) {
+            const modal = $(selector);
+            modal.children[0].classList.remove('scale-100');
+            modal.children[0].classList.add('scale-95');
+            modal.classList.add('opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 200);
+        }
+
+        // Save Task Action
+        async function handleSaveTask(e) {
+            e.preventDefault();
+
+            const title = $('#taskTitle').value.trim();
+            const subject = $('#taskSubject').value.trim();
+            const priority = $('#taskPriority').value;
+            const deadline = new Date($('#taskDeadline').value).toISOString();
+            const status = $('#taskStatus').value;
+            const notes = $('#taskNotes').value.trim();
+
+            if (!title || !subject || !deadline) {
+                showToast('Mohon lengkapi bidang yang wajib diisi!', 'error');
+                return;
+            }
+
+            const taskId = state.editingTaskId || 'task_' + Date.now();
+            const taskData = {
+                id: taskId,
+                title,
+                subject,
+                priority,
+                deadline,
+                status,
+                notes,
+                files: state.stagedFiles,
+                createdAt: state.editingTaskId ? (state.tasks.find(t => t.id === taskId)?.createdAt || new Date().toISOString()) : new Date().toISOString()
+            };
+
+            try {
+                await dbEngine.saveTask(taskData);
+                
+                if (state.editingTaskId) {
+                    const idx = state.tasks.findIndex(t => t.id === taskId);
+                    if (idx !== -1) state.tasks[idx] = taskData;
+                    showToast('Tugas berhasil diperbarui!', 'success');
+                } else {
+                    state.tasks.push(taskData);
+                    showToast('Tugas baru berhasil disimpan!', 'success');
+                }
+
+                renderStats();
+                renderTasks();
+                hideModal('#taskModal');
+            } catch (err) {
+                showToast(err.toString(), 'error');
+            }
+        }
+
+        // Quick Toggle Task Status
+        async function toggleTaskStatus(id) {
+            const task = state.tasks.find(t => t.id === id);
+            if (!task) return;
+
+            const nextStatus = task.status === 'completed' ? 'pending' : 'completed';
+            task.status = nextStatus;
+
+            try {
+                await dbEngine.saveTask(task);
+                renderStats();
+                renderTasks();
+                showToast(`Status tugas diubah menjadi "${nextStatus === 'completed' ? 'Selesai' : 'Belum Selesai'}"`, 'info');
+            } catch (err) {
+                showToast('Gagal memperbarui status tugas.', 'error');
+            }
+        }
+
+        // Delete Task Logic
+        function promptDeleteTask(id) {
+            state.deletingTaskId = id;
+            showModal('#confirmModal');
+        }
+
+        async function confirmDeleteTask() {
+            if (!state.deletingTaskId) return;
+
+            try {
+                await dbEngine.deleteTask(state.deletingTaskId);
+                state.tasks = state.tasks.filter(t => t.id !== state.deletingTaskId);
+                renderStats();
+                renderTasks();
+                hideModal('#confirmModal');
+                hideModal('#detailModal');
+                showToast('Tugas berhasil dihapus dari Vault.', 'info');
+            } catch (err) {
+                showToast('Gagal menghapus tugas.', 'error');
+            } finally {
+                state.deletingTaskId = null;
+            }
+        }
+
+        // Open Task Detail View Modal
+        function openDetailModal(id) {
+            const task = state.tasks.find(t => t.id === id);
+            if (!task) return;
+
+            state.viewingTaskId = id;
+
+            $('#detailTitle').textContent = task.title;
+            $('#detailSubject').textContent = task.subject;
+            
+            // Priority Tag
+            const prioBadge = $('#detailPriorityBadge');
+            if (task.priority === 'high') {
+                prioBadge.textContent = 'Prioritas Tinggi';
+                prioBadge.className = 'px-2.5 py-1 rounded-md text-xs font-semibold bg-rose-100 text-rose-600 dark:bg-rose-950 dark:text-rose-400';
+            } else if (task.priority === 'medium') {
+                prioBadge.textContent = 'Prioritas Sedang';
+                prioBadge.className = 'px-2.5 py-1 rounded-md text-xs font-semibold bg-amber-100 text-amber-600 dark:bg-amber-950 dark:text-amber-400';
+            } else {
+                prioBadge.textContent = 'Prioritas Rendah';
+                prioBadge.className = 'px-2.5 py-1 rounded-md text-xs font-semibold bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400';
+            }
+
+            $('#detailDeadline').textContent = formatDate(task.deadline);
+            
+            // Status Tag
+            const statusEl = $('#detailStatus');
+            if (task.status === 'completed') {
+                statusEl.textContent = 'Selesai';
+                statusEl.className = 'font-semibold text-emerald-600 dark:text-emerald-400';
+            } else if (task.status === 'in_progress') {
+                statusEl.textContent = 'Sedang Dikerjakan';
+                statusEl.className = 'font-semibold text-blue-600 dark:text-blue-400';
+            } else {
+                statusEl.textContent = 'Belum Selesai';
+                statusEl.className = 'font-semibold text-amber-600 dark:text-amber-400';
+            }
+
+            $('#detailNotes').textContent = task.notes || 'Tidak ada catatan tambahan untuk tugas ini.';
+
+            // Render File Download Items
+            const fileListContainer = $('#detailFileList');
+            fileListContainer.innerHTML = '';
+
+            if (task.files && task.files.length > 0) {
+                task.files.forEach(file => {
+                    const item = document.createElement('div');
+                    item.className = 'flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-800 text-xs';
+                    
+                    item.innerHTML = `
+                        <div class="flex items-center space-x-3 min-w-0 pr-2">
+                            <i class="fa-solid ${getFileIcon(file.type, file.name)} text-lg shrink-0"></i>
+                            <div class="min-w-0">
+                                <p class="font-semibold text-slate-800 dark:text-slate-200 truncate">${escapeHtml(file.name)}</p>
+                                <p class="text-[10px] text-slate-400">${formatBytes(file.size)}</p>
+                            </div>
+                        </div>
+                        <button onclick="downloadTaskFile('${task.id}', '${file.id}')" class="px-3 py-1.5 rounded-lg bg-brand-50 dark:bg-brand-900/30 text-brand-600 dark:text-brand-400 hover:bg-brand-100 font-semibold transition-colors flex items-center space-x-1.5 shrink-0">
+                            <i class="fa-solid fa-download"></i>
+                            <span>Unduh</span>
+                        </button>
+                    `;
+                    fileListContainer.appendChild(item);
+                });
+            } else {
+                fileListContainer.innerHTML = '<p class="text-xs text-slate-400 italic">Tidak ada berkas yang dilampirkan.</p>';
+            }
+
+            showModal('#detailModal');
+        }
+
+        // Programmatic Blob Download Handler
+        function downloadTaskFile(taskId, fileId) {
+            const task = state.tasks.find(t => t.id === taskId);
+            if (!task) return;
+
+            const file = task.files.find(f => f.id === fileId);
+            if (!file || !file.blob) {
+                showToast('Berkas tidak ditemukan atau rusak.', 'error');
+                return;
+            }
+
+            try {
+                // Generate ObjectURL from stored Blob
+                const blob = file.blob instanceof Blob ? file.blob : new Blob([file.blob], { type: file.type });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = file.name;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                showToast(`Mengunduh: ${file.name}`, 'success');
+            } catch (err) {
+                console.error("Download error:", err);
+                showToast('Gagal mengunduh berkas.', 'error');
+            }
+        }
+
+        // Convert Blob to Base64 helper for JSON backup export
+        function blobToBase64(blob) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+            });
+        }
+
+        // Convert Base64 back to Blob for JSON import
+        function base64ToBlob(base64, type) {
+            const byteString = atob(base64.split(',')[1]);
+            const ab = new ArrayBuffer(byteString.length);
+            const ia = new Uint8Array(ab);
+            for (let i = 0; i < byteString.length; i++) {
+                ia[i] = byteString.charCodeAt(i);
+            }
+            return new Blob([ab], { type: type || 'application/octet-stream' });
+        }
+
+        // Export All Task Data to JSON File
+        async function exportDataJSON() {
+            if (state.tasks.length === 0) {
+                showToast('Tidak ada data tugas untuk diekspor.', 'info');
+                return;
+            }
+
+            showToast('Menyiapkan cadangan JSON...', 'info');
+
+            try {
+                // Prepare deep clone of task metadata and files with Base64 strings
+                const exportableTasks = await Promise.all(state.tasks.map(async (task) => {
+                    const convertedFiles = await Promise.all((task.files || []).map(async (file) => {
+                        let base64Data = null;
+                        if (file.blob) {
+                            base64Data = await blobToBase64(file.blob);
+                        }
+                        return {
+                            id: file.id,
+                            name: file.name,
+                            size: file.size,
+                            type: file.type,
+                            base64: base64Data
+                        };
+                    }));
+
+                    return {
+                        ...task,
+                        files: convertedFiles
+                    };
+                }));
+
+                const backupObject = {
+                    app: 'TaskVault',
+                    version: 1,
+                    exportedAt: new Date().toISOString(),
+                    tasks: exportableTasks
+                };
+
+                const jsonStr = JSON.stringify(backupObject, null, 2);
+                const blob = new Blob([jsonStr], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `TaskVault_Backup_${new Date().toISOString().slice(0, 10)}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+
+                showToast('Ekspor data berhasil diunduh!', 'success');
+            } catch (err) {
+                console.error("Export Error:", err);
+                showToast('Gagal mengekspor data JSON.', 'error');
+            }
+        }
+
+        // Import Task Data from JSON File
+        function importDataJSON(file) {
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (!data.app || data.app !== 'TaskVault' || !Array.isArray(data.tasks)) {
+                        showToast('Format berkas JSON tidak valid!', 'error');
+                        return;
+                    }
+
+                    showToast('Memulihkan data tugas...', 'info');
+
+                    for (const rawTask of data.tasks) {
+                        const restoredFiles = (rawTask.files || []).map(f => {
+                            let blobData = null;
+                            if (f.base64) {
+                                blobData = base64ToBlob(f.base64, f.type);
+                            }
+                            return {
+                                id: f.id,
+                                name: f.name,
+                                size: f.size,
+                                type: f.type,
+                                blob: blobData
+                            };
+                        });
+
+                        const restoredTask = {
+                            id: rawTask.id || 'task_' + Date.now(),
+                            title: rawTask.title,
+                            subject: rawTask.subject,
+                            priority: rawTask.priority || 'medium',
+                            deadline: rawTask.deadline,
+                            status: rawTask.status || 'pending',
+                            notes: rawTask.notes || '',
+                            files: restoredFiles,
+                            createdAt: rawTask.createdAt || new Date().toISOString()
+                        };
+
+                        await dbEngine.saveTask(restoredTask);
+                    }
+
+                    // Reload from DB
+                    state.tasks = await dbEngine.getAllTasks();
+                    renderStats();
+                    renderTasks();
+                    showToast('Data tugas dan berkas berhasil dipulihkan!', 'success');
+                } catch (err) {
+                    console.error("Import error:", err);
+                    showToast('Gagal membaca berkas JSON.', 'error');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // Theme Switcher Toggle
+        function setupThemeToggle() {
+            const themeBtn = $('#themeToggleBtn');
+            const themeIcon = $('#themeIcon');
+            const themeText = $('#themeText');
+
+            // Default dark mode setup
+            if (localStorage.getItem('theme') === 'light') {
+                document.documentElement.classList.remove('dark');
+                themeIcon.className = 'fa-solid fa-sun text-amber-500';
+                themeText.textContent = 'Mode Terang';
+            } else {
+                document.documentElement.classList.add('dark');
+                themeIcon.className = 'fa-solid fa-moon text-indigo-400';
+                themeText.textContent = 'Mode Gelap';
+            }
+
+            themeBtn.addEventListener('click', () => {
+                if (document.documentElement.classList.contains('dark')) {
+                    document.documentElement.classList.remove('dark');
+                    localStorage.setItem('theme', 'light');
+                    themeIcon.className = 'fa-solid fa-sun text-amber-500';
+                    themeText.textContent = 'Mode Terang';
+                } else {
+                    document.documentElement.classList.add('dark');
+                    localStorage.setItem('theme', 'dark');
+                    themeIcon.className = 'fa-solid fa-moon text-indigo-400';
+                    themeText.textContent = 'Mode Gelap';
+                }
+            });
+        }
+
+        // Setup All UI Event Listeners
+        function setupEventListeners() {
+            // Sidebar Mobile Menu Toggle
+            $('#mobileMenuBtn').addEventListener('click', () => {
+                $('#navMenu').classList.toggle('hidden');
+            });
+
+            // Navigation Links Filter
+            $$('.nav-link').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    $$('.nav-link').forEach(l => l.classList.remove('active', 'bg-brand-50', 'dark:bg-brand-500/10', 'text-brand-600', 'dark:text-brand-400'));
+                    link.classList.add('active', 'bg-brand-50', 'dark:bg-brand-500/10', 'text-brand-600', 'dark:text-brand-400');
+                    
+                    state.filterNav = link.getAttribute('data-filter-nav');
+                    renderTasks();
+                });
+            });
+
+            // Controls Toolbar Event Listeners
+            $('#searchInput').addEventListener('input', (e) => {
+                state.searchQuery = e.target.value;
+                renderTasks();
+            });
+
+            $('#filterStatus').addEventListener('change', (e) => {
+                state.filterStatus = e.target.value;
+                renderTasks();
+            });
+
+            $('#filterPriority').addEventListener('change', (e) => {
+                state.filterPriority = e.target.value;
+                renderTasks();
+            });
+
+            $('#sortBy').addEventListener('change', (e) => {
+                state.sortBy = e.target.value;
+                renderTasks();
+            });
+
+            // Grid / List Toggle Buttons
+            $('#viewGridBtn').addEventListener('click', () => {
+                state.viewMode = 'grid';
+                $('#viewGridBtn').className = "p-1.5 rounded-lg text-xs transition-colors bg-white dark:bg-slate-700 text-brand-600 dark:text-brand-400 shadow-sm";
+                $('#viewListBtn').className = "p-1.5 rounded-lg text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors";
+                renderTasks();
+            });
+
+            $('#viewListBtn').addEventListener('click', () => {
+                state.viewMode = 'list';
+                $('#viewListBtn').className = "p-1.5 rounded-lg text-xs transition-colors bg-white dark:bg-slate-700 text-brand-600 dark:text-brand-400 shadow-sm";
+                $('#viewGridBtn').className = "p-1.5 rounded-lg text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors";
+                renderTasks();
+            });
+
+            // Modal Trigger Buttons
+            $('#openAddTaskModalBtn').addEventListener('click', openAddTaskModal);
+            $('#emptyAddTaskBtn').addEventListener('click', openAddTaskModal);
+            $('#closeModalBtn').addEventListener('click', () => hideModal('#taskModal'));
+            $('#cancelTaskBtn').addEventListener('click', () => hideModal('#taskModal'));
+            
+            // Form Submit
+            $('#taskForm').addEventListener('submit', handleSaveTask);
+
+            // Confirm Delete Modal
+            $('#cancelConfirmBtn').addEventListener('click', () => hideModal('#confirmModal'));
+            $('#okConfirmBtn').addEventListener('click', confirmDeleteTask);
+
+            // Detail Modal
+            $('#closeDetailModalBtn').addEventListener('click', () => hideModal('#detailModal'));
+            $('#editFromDetailBtn').addEventListener('click', () => {
+                if (state.viewingTaskId) openEditTaskModal(state.viewingTaskId);
+            });
+
+            // Export & Import Buttons
+            $('#exportJsonBtn').addEventListener('click', exportDataJSON);
+            $('#importJsonBtn').addEventListener('click', () => $('#importFileInput').click());
+            $('#importFileInput').addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    importDataJSON(e.target.files[0]);
+                    e.target.value = ''; // Reset
+                }
+            });
+
+            // Close modals on backdrop click
+            ['#taskModal', '#detailModal', '#confirmModal'].forEach(selector => {
+                $(selector).addEventListener('click', (e) => {
+                    if (e.target === $(selector)) hideModal(selector);
+                });
+            });
+        }
+
+        // Initialize App on Window Load
+        window.onload = async function () {
+            try {
+                setupThemeToggle();
+                setupFileUploadHandlers();
+                setupEventListeners();
+
+                // Initialize IndexedDB
+                await dbEngine.init();
+                state.tasks = await dbEngine.getAllTasks();
+
+                // Render UI
+                renderStats();
+                renderTasks();
+
+                console.log("TaskVault Initialized successfully.");
+            } catch (err) {
+                console.error("Initialization failure:", err);
+                showToast("Gagal memuat penyimpanan lokal.", "error");
+            }
+        };
+    </script>
+</body>
+</html>
